@@ -1,0 +1,27 @@
+See http://nvie.com/posts/a-successful-git-branching-model/
+
+Creating a feature branch
+$ git checkout -b myfeature develop
+
+Incorporating a finished feature on develop
+$ git checkout develop
+$ git merge --no-ff myfeature
+$ git branch -d myfeature
+$ git push origin develop
+
+Creating a release branch
+$ git checkout -b release-1.2 develop
+(Modify VERSION file)
+$ git commit -a -m "Bump version number to 1.2"
+
+Finishing a release branch
+$ git checkout master
+$ git merge --no-ff release-1.2
+$ git tag -a 1.2
+
+Keep final changes in release by merging back to develop
+$ git checkout develop
+$ git merge --no-ff release-1.2
+
+Remove release branch since it's no longer necessary
+$ git branch -d release-1.2
