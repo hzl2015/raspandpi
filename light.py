@@ -1,4 +1,3 @@
-from ws2812arduino import Ws2812Arduino
 import colorsys
 import time
 
