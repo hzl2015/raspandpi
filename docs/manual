@@ -1,0 +1,4 @@
+dimmer.py:
+	Adjusts the intensity and color of the LEDs
+
+	Is called every minute by cron. Reads the config and adjusts LEDs.
