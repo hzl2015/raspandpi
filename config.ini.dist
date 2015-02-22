@@ -1,0 +1,11 @@
+[Start]
+Time: 05:30
+Intensity: 0.1
+
+[Wakeup]
+Time: 06:00
+Intensity: 1.0
+
+[Stop]
+Time: 06:15
+Intensity: 0
