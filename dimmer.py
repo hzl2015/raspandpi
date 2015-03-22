@@ -4,6 +4,9 @@ import os
 import ConfigParser
 import time
 import datetime
+from arduino_light import ArduinoLight
+from light import Light
+import serial
 
 class Settings:
     def __init__(self, pathname=""):
@@ -25,24 +28,45 @@ class Settings:
         struct = time.strptime(time_, "%H:%M")
         dt = datetime.datetime.fromtimestamp(time.mktime(struct))
         return dt
-    
-def set_lighting(settings):
+
+def setup_light_hardware(serial_port):
+    hw = ArduinoLight(serial_port)
+    light = Light(hw)
+    return light
+
+def set_lighting(light, settings):
     now = datetime.datetime.now().replace(year=1900, month=1, day=1)
     if settings.start_time <= now < settings.wakeup_time:
         print("{}    Increasing intensity...".format(now))
         # We want a certain color
         # The intensity should increase linearly between start and wakeup
         # Set LEDs
+        light.set_color((1.0, 1.0, 1.0))	# TODO: Blend color between start_color and wakeup_color-
+        si = settings.start_intensity
+        wi = settings.wakeup_intensity
+        st = time.mktime(settings.start_time.timetuple())
+        wt = time.mktime(settings.wakeup_time.timetuple())
+        n = time.mktime(now.timetuple())
+        intensity_scaling = (wi - si) / (wt - st) * (n - st) + si
+        light.set_intensity(settings.wakeup_intensity * intensity_scaling)
+        light.refresh()
     elif settings.wakeup_time <= now < settings.stop_time:
         print("{}    Maximum brightness. Wake up!".format(now))
         # Set LEDs to
-        settings.wakeup_intensity
+        light.set_color((1.0, 1.0, 1.0))
+        light.set_intensity(settings.wakeup_intensity)
+        light.refresh()
     else:
         print("{}    Off.".format(now))
         # Set LEDs to off
-        settings.stop_intensity
-        
+        light.set_color((1.0, 1.0, 1.0))
+        light.set_intensity(settings.stop_intensity)
+        light.refresh()
+
 if __name__ == "__main__":
     settings = Settings()
-    set_lighting(settings)
+    serial_port = "/dev/ttyACM0"
+    serial_speed = 9600
+    light = setup_light_hardware(serial.Serial(serial_port, serial_speed))
+    set_lighting(light, settings)
     
