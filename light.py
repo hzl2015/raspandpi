@@ -10,7 +10,7 @@ class Light:
 		self.color = (1, 1, 1)
 		self.intensity = 0.0
 		self.hw = light_hardware
-		self.refresh()
+		#self.refresh()
 
 	def __dim(self, rgb_color, intensity):
 		""" Dim color.
