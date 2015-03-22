@@ -14,6 +14,10 @@ class ArduinoLight:
 		"""
 		self.led_count = 144
 		self.ser = hw_interface
+		# Making sure DTR is not resetting the arduino.
+		self.ser.setDTR(False)
+		# Sleep to allow the arduino to boot.
+		time.sleep(3)
 
 	def set_led(self, led_nr, color):
 		"""Set the color of a specific led.
