@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
+import sys
 import ConfigParser
 import time
 import datetime
 from arduino_light import ArduinoLight
+from mock_light import MockLight
 from light import Light
 import serial
 
@@ -65,8 +67,11 @@ def set_lighting(light, settings):
 
 if __name__ == "__main__":
     settings = Settings()
-    serial_port = "/dev/ttyACM0"
-    serial_speed = 9600
-    light = setup_light_hardware(serial.Serial(serial_port, serial_speed))
+    if "--mock_light" in sys.argv:
+    	light = Light(MockLight())
+    else:
+    	serial_port = "/dev/ttyACM0"
+    	serial_speed = 9600
+    	light = setup_light_hardware(serial.Serial(serial_port, serial_speed))
     set_lighting(light, settings)
     
