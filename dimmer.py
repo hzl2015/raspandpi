@@ -19,6 +19,7 @@ class Settings:
     def read(self):
         config = ConfigParser.ConfigParser()
         config.read(self.pathname)
+        self.weekdays = self._parse_weekdays(config.get("Schedule", "Weekdays"))
         self.start_time = self._parse_time(config.get("Start", "Time"))
         self.start_intensity = config.getfloat("Start", "Intensity")
         self.wakeup_time = self._parse_time(config.get("Wakeup", "Time"))
@@ -31,6 +32,13 @@ class Settings:
         dt = datetime.datetime.fromtimestamp(time.mktime(struct))
         return dt
 
+    def _parse_weekdays(self, weekdays_):
+        converted_weekdays = []
+        for weekday in weekdays_.split(","):
+            converted_weekday = time.strptime(weekday.strip(), "%a").tm_wday
+            converted_weekdays.append(converted_weekday)
+        return converted_weekdays
+
 def setup_light_hardware(serial_port):
     hw = ArduinoLight(serial_port)
     light = Light(hw)
@@ -38,32 +46,37 @@ def setup_light_hardware(serial_port):
 
 def set_lighting(light, settings):
     now = datetime.datetime.now().replace(year=1970, month=1, day=1)
-    if settings.start_time <= now < settings.wakeup_time:
-        print("{}    Increasing intensity...".format(now))
-        # We want a certain color
-        # The intensity should increase linearly between start and wakeup
-        # Set LEDs
-        light.set_color((1.0, 1.0, 1.0))	# TODO: Blend color between start_color and wakeup_color-
-        si = settings.start_intensity
-        wi = settings.wakeup_intensity
-        st = time.mktime(settings.start_time.timetuple())
-        wt = time.mktime(settings.wakeup_time.timetuple())
-        n = time.mktime(now.timetuple())
-        intensity_scaling = (wi - si) / (wt - st) * (n - st) + si
-        light.set_intensity(settings.wakeup_intensity * intensity_scaling)
-        light.refresh()
-    elif settings.wakeup_time <= now < settings.stop_time:
-        print("{}    Maximum brightness. Wake up!".format(now))
-        # Set LEDs to
-        light.set_color((1.0, 1.0, 1.0))
-        light.set_intensity(settings.wakeup_intensity)
-        light.refresh()
+    if datetime.datetime.now().weekday() in settings.weekdays:
+        if settings.start_time <= now < settings.wakeup_time:
+            print("{}    Increasing intensity...".format(now))
+            # We want a certain color
+            # The intensity should increase linearly between start and wakeup
+            # Set LEDs
+            light.set_color((1.0, 1.0, 1.0))	
+            light.set_intensity(settings.wakeup_intensity * intensity_scaling)
+            light.refresh()# TODO: Blend color between start_color and wakeup_color-
+            si = settings.start_intensity
+            wi = settings.wakeup_intensity
+            st = time.mktime(settings.start_time.timetuple())
+            wt = time.mktime(settings.wakeup_time.timetuple())
+            n = time.mktime(now.timetuple())
+            intensity_scaling = (wi - si) / (wt - st) * (n - st) + si
+            light.set_intensity(settings.wakeup_intensity * intensity_scaling)
+            light.refresh()
+        elif settings.wakeup_time <= now < settings.stop_time:
+            print("{}    Maximum brightness. Wake up!".format(now))
+            # Set LEDs to
+            light.set_color((1.0, 1.0, 1.0))
+            light.set_intensity(settings.wakeup_intensity)
+            light.refresh()
+        else:
+            print("{}    Off.".format(now))
+            # Set LEDs to off
+            light.set_color((1.0, 1.0, 1.0))
+            light.set_intensity(settings.stop_intensity)
+            light.refresh()
     else:
-        print("{}    Off.".format(now))
-        # Set LEDs to off
-        light.set_color((1.0, 1.0, 1.0))
-        light.set_intensity(settings.stop_intensity)
-        light.refresh()
+        print("{}    Nothing scheduled for today.".format(now))
 
 if __name__ == "__main__":
     settings = Settings()
