@@ -27,7 +27,7 @@ class Settings:
         self.stop_intensity = config.getfloat("Stop", "Intensity")
 
     def _parse_time(self, time_):
-        struct = time.strptime(time_, "%H:%M")
+        struct = time.strptime(time_, "%Y-%m-%d %H:%M")
         dt = datetime.datetime.fromtimestamp(time.mktime(struct))
         return dt
 
@@ -37,7 +37,7 @@ def setup_light_hardware(serial_port):
     return light
 
 def set_lighting(light, settings):
-    now = datetime.datetime.now().replace(year=1900, month=1, day=1)
+    now = datetime.datetime.now().replace(year=1970, month=1, day=1)
     if settings.start_time <= now < settings.wakeup_time:
         print("{}    Increasing intensity...".format(now))
         # We want a certain color
