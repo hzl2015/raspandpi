@@ -45,8 +45,8 @@ def setup_light_hardware(serial_port):
     return light
 
 def set_lighting(light, settings):
-    now = datetime.datetime.now().replace(year=1970, month=1, day=1)
     if datetime.datetime.now().weekday() in settings.weekdays:
+        now = datetime.datetime.now().replace(year=1970, month=1, day=1)
         if settings.start_time <= now < settings.wakeup_time:
             print("{}    Increasing intensity...".format(now))
             # We want a certain color
